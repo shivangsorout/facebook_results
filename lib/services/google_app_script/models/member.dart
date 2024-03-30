@@ -25,4 +25,10 @@ class Member {
         keyIsAdmin: isAdmin,
         keyScore: score,
       };
+
+  @override
+  bool operator ==(covariant Member other) => id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

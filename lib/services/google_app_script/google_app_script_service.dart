@@ -102,7 +102,7 @@ class GoogleAppScriptService {
   }
 
   /// Post request for adding a new member in the main sheet.
-  Future<int> addNewMember({
+  Future<String> addNewMember({
     required String memberName,
     required bool isAdmin,
   }) async {
@@ -114,7 +114,7 @@ class GoogleAppScriptService {
       };
       final response = await postRequest(data: query);
       devtools.log(response.toString());
-      return response[keyMemberId];
+      return response[keyMemberId].toString();
     } catch (error) {
       devtools.log('Error: $error');
       rethrow;
