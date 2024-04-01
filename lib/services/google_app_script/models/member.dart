@@ -31,4 +31,8 @@ class Member {
 
   @override
   int get hashCode => id.hashCode;
+
+  @override
+  String toString() =>
+      'Member Details =>  Member Id: $id, Member Name: $name, Member IsAdmin: $isAdmin, Member Score: $score';
 }

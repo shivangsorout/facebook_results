@@ -1,3 +1,5 @@
+import 'package:facebook_results/constants/routes.dart';
+import 'package:facebook_results/constants/theme_constant.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
 import 'package:facebook_results/helpers/custom_widgets/home_view_button.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +16,11 @@ class HomeView extends StatelessWidget {
       appBar: AppBar(
         title: SvgPicture.asset(
           'assets/images/facebook results.svg',
-          width: context.mqSize.width * 0.56,
+          height: context.mqSize.height * 0.0343,
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(context.mqSize.height * 0.016),
+        padding: EdgeInsets.all(context.mqSize.height * bodyPaddingFactor),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,7 +37,9 @@ class HomeView extends StatelessWidget {
                 HomeViewButton(
                   iconName: 'result_clipboard',
                   text: 'Create Result',
-                  onPress: () {},
+                  onPress: () {
+                    Navigator.of(context).pushNamed(createResultRoute);
+                  },
                 ),
                 SizedBox(width: context.mqSize.width * 0.025),
                 HomeViewButton(
