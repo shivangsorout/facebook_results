@@ -17,7 +17,11 @@ class IconSVGButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPress,
-      child: Padding(
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: context.mqSize.height * 0.044,
+          minWidth: context.mqSize.width * 0.095,
+        ),
         padding: EdgeInsets.all(context.mqSize.width * 0.02),
         child: SvgPicture.asset(
           'assets/icons/$iconName.svg',

@@ -1,3 +1,4 @@
 const homeRoute = '/home/';
 const historyRoute = '/history/';
-const createResultRoute = '/home/create-result/';
+const createResultRoute = '/create-result/';
+const searchMembersRoute = '/create-result/search-members/';

@@ -5,17 +5,16 @@ import 'package:facebook_results/services/google_app_script/models/member.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-typedef OnChangedCallback = void Function(String)?;
-typedef OnSeletedCallback = void Function(Member);
+typedef OnMemberCallback = void Function(Member);
 
 class ResultListTile extends StatefulWidget {
   final Member member;
-  final OnChangedCallback onChanged;
-  final OnSeletedCallback onLongTap;
+  final OnMemberCallback onChanged;
+  final OnMemberCallback onLongTap;
   const ResultListTile({
     super.key,
     required this.member,
-    this.onChanged,
+    required this.onChanged,
     required this.onLongTap,
   });
 
@@ -45,81 +44,98 @@ class _ResultListTileState extends State<ResultListTile> {
   @override
   Widget build(BuildContext context) {
     member = widget.member;
-    return Material(
-      borderRadius: const BorderRadius.all(Radius.circular(9)),
-      elevation: 2,
-      child: ClipRRect(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: context.mqSize.height * 0.007,
+      ),
+      child: Material(
         borderRadius: const BorderRadius.all(Radius.circular(9)),
-        child: Material(
-          color: Colors.white,
-          child: InkWell(
-            onLongPress: () {
-              widget.onLongTap(member);
-            },
-            child: Container(
-              padding: EdgeInsets.all(context.mqSize.width * 0.03),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: context.mqSize.height * 0.028,
-                        backgroundImage: AssetImage(
-                          'assets/images/profile_picture$randomNumber.jpg',
+        elevation: 2,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(9)),
+          child: Material(
+            color: Colors.white,
+            child: InkWell(
+              onLongPress: () {
+                widget.onLongTap(member);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.mqSize.width * 0.03,
+                  vertical: context.mqSize.height * 0.014,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: context.mqSize.height * 0.028,
+                          backgroundImage: AssetImage(
+                            'assets/images/profile_picture$randomNumber.jpg',
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: context.mqSize.width * 0.044,
-                      ),
-                      Text(
-                        member.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: context.mqSize.height * 0.023,
+                        SizedBox(
+                          width: context.mqSize.width * 0.044,
                         ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Visibility(
-                        visible: member.isAdmin,
-                        child: SvgPicture.asset(
-                          'assets/icons/crown.svg',
-                          height: context.mqSize.height * 0.025,
+                        Text(
+                          member.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: context.mqSize.height * 0.023,
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        width: context.mqSize.width * 0.044,
-                      ),
-                      SizedBox(
-                        width: context.mqSize.width * 0.085,
-                        child: TextField(
-                          onChanged: widget.onChanged,
-                          autocorrect: false,
-                          controller: _textController,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                            hintText: '0',
-                            fillColor: const Color(0xffF1F2F6),
-                            filled: true,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: context.mqSize.height * 0.008,
-                              horizontal: context.mqSize.width * 0.008,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(9),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Visibility(
+                          visible: member.isAdmin,
+                          child: SvgPicture.asset(
+                            'assets/icons/crown.svg',
+                            height: context.mqSize.height * 0.025,
+                          ),
+                        ),
+                        SizedBox(
+                          width: context.mqSize.width * 0.044,
+                        ),
+                        SizedBox(
+                          width: context.mqSize.width * 0.085,
+                          child: TextField(
+                            onChanged: (newScore) {
+                              final member = widget.member;
+                              final updatedMember = Member(
+                                id: member.id,
+                                name: member.name,
+                                isAdmin: member.isAdmin,
+                                score: int.tryParse(newScore),
+                              );
+                              widget.onChanged(updatedMember);
+                            },
+                            autocorrect: false,
+                            controller: _textController,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: '0',
+                              fillColor: const Color(0xffF1F2F6),
+                              filled: true,
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: context.mqSize.height * 0.008,
+                                horizontal: context.mqSize.width * 0.008,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.circular(9),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

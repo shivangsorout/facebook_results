@@ -1,7 +1,8 @@
 import 'package:facebook_results/constants/routes.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_bloc.dart';
 import 'package:facebook_results/services/google_app_script/google_app_script_service.dart';
-import 'package:facebook_results/views/create_result_view.dart';
+import 'package:facebook_results/views/create_result/create_result_view.dart';
+import 'package:facebook_results/views/create_result/search_members.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:facebook_results/constants/theme_constant.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
@@ -43,6 +44,7 @@ class MainApp extends StatelessWidget {
       routes: {
         homeRoute: (context) => const HomeView(),
         createResultRoute: (context) => const CreateResultView(),
+        searchMembersRoute: (context) => const SearchMembersView(),
       },
       home: BlocProvider<GASBloc>(
         create: (context) => GASBloc(GoogleAppScriptService()),
