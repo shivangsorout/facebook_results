@@ -67,7 +67,11 @@ class _CreateResultViewState extends State<CreateResultView> {
           SizedBox(
             width: context.mqSize.width * 0.14,
             child: TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil(homeRoute, (route) => false);
+                Navigator.of(context).pushNamed(resultReadyRoute);
+              },
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Colors.grey[400]),
                 shape: MaterialStateProperty.all(

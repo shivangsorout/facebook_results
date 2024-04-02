@@ -30,10 +30,7 @@ class HomeViewButton extends StatelessWidget {
             color: Colors.white,
             child: InkWell(
               onTap: onPress,
-              child: Container(
-                constraints: BoxConstraints(
-                  minHeight: context.mqSize.height * 0.115,
-                ),
+              child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: context.mqSize.width * 0.039,
                   vertical: context.mqSize.height * 0.015,
@@ -42,9 +39,14 @@ class HomeViewButton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SvgPicture.asset(
-                      'assets/icons/$iconName.svg',
-                      height: context.mqSize.height * size,
+                    Container(
+                      constraints: BoxConstraints(
+                        minHeight: context.mqSize.height * 0.051,
+                      ),
+                      child: SvgPicture.asset(
+                        'assets/icons/$iconName.svg',
+                        height: context.mqSize.height * size,
+                      ),
                     ),
                     SizedBox(height: context.mqSize.height * 0.01),
                     Text(
