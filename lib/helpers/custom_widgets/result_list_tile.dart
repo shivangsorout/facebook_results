@@ -22,10 +22,11 @@ class ResultListTile extends StatefulWidget {
   State<ResultListTile> createState() => _ResultListTileState();
 }
 
-class _ResultListTileState extends State<ResultListTile> {
+class _ResultListTileState extends State<ResultListTile>
+    with AutomaticKeepAliveClientMixin {
   late final int randomNumber;
   late Member member;
-  late final TextEditingController _textController;
+  TextEditingController? _textController;
 
   @override
   void initState() {
@@ -37,12 +38,14 @@ class _ResultListTileState extends State<ResultListTile> {
 
   @override
   void dispose() {
-    _textController.dispose();
+    _textController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    _textController?.text = widget.member.score?.toString() ?? '';
     member = widget.member;
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -78,11 +81,15 @@ class _ResultListTileState extends State<ResultListTile> {
                         SizedBox(
                           width: context.mqSize.width * 0.044,
                         ),
-                        Text(
-                          member.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: context.mqSize.height * 0.023,
+                        SizedBox(
+                          width: context.mqSize.width * 0.42,
+                          child: Text(
+                            member.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: context.mqSize.height * 0.023,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ],
@@ -143,4 +150,7 @@ class _ResultListTileState extends State<ResultListTile> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

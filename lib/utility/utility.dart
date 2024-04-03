@@ -14,3 +14,6 @@ Text titleText({
     ),
   );
 }
+
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();

@@ -1,6 +1,9 @@
 import 'package:facebook_results/constants/routes.dart';
+import 'package:facebook_results/helpers/loading/loading_screen.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_bloc.dart';
+import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
 import 'package:facebook_results/services/google_app_script/google_app_script_service.dart';
+import 'package:facebook_results/utility/utility.dart';
 import 'package:facebook_results/views/create_result/create_result_view.dart';
 import 'package:facebook_results/views/create_result/search_members.dart';
 import 'package:facebook_results/views/history_view.dart';
@@ -24,35 +27,51 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          titleTextStyle: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontSize: context.mqSize.height * 0.026,
+    return BlocProvider(
+      create: (context) => GASBloc(GoogleAppScriptService()),
+      child: MaterialApp(
+        navigatorObservers: [routeObserver],
+        theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            titleTextStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              fontSize: context.mqSize.height * 0.026,
+            ),
+            toolbarHeight: context.mqSize.height * 0.08,
+            backgroundColor: appBarBackgroundColor,
+            elevation: 2.0,
+            shadowColor: appBarShadowColor,
+            surfaceTintColor: appBarBackgroundColor,
           ),
-          toolbarHeight: context.mqSize.height * 0.08,
-          backgroundColor: appBarBackgroundColor,
-          elevation: 2.0,
-          shadowColor: appBarShadowColor,
-          surfaceTintColor: appBarBackgroundColor,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.white,
+            background: appBackgroundColor,
+          ),
         ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.white,
-          background: appBackgroundColor,
+        routes: {
+          homeRoute: (context) => const HomeView(),
+          createResultRoute: (context) => const CreateResultView(),
+          searchMembersRoute: (context) => const SearchMembersView(),
+          resultReadyRoute: (context) => const ResultReadyView(),
+          historyRoute: (context) => const HistoryView(),
+        },
+        home: BlocConsumer<GASBloc, GASState>(
+          listener: (context, state) {
+            if (state.isLoading) {
+              LoadingScreen().show(
+                context: context,
+                text:
+                    state.loadingText ?? 'Please wait a moment while we load!',
+              );
+            } else {
+              LoadingScreen().hide();
+            }
+          },
+          builder: (context, state) {
+            return const HomeView();
+          },
         ),
-      ),
-      routes: {
-        homeRoute: (context) => const HomeView(),
-        createResultRoute: (context) => const CreateResultView(),
-        searchMembersRoute: (context) => const SearchMembersView(),
-        resultReadyRoute: (context) => const ResultReadyView(),
-        historyRoute: (context) => const HistoryView(),
-      },
-      home: BlocProvider<GASBloc>(
-        create: (context) => GASBloc(GoogleAppScriptService()),
-        child: const HomeView(),
       ),
     );
   }

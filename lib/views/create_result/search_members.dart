@@ -22,10 +22,13 @@ class _SearchMembersViewState extends State<SearchMembersView> {
   late List<Member> _filteredMembers;
   late void Function(Member) onScoreChange;
   late List<Member> myList;
+  final FocusNode _searchFocusNode = FocusNode();
+  String _currentSearchQuery = '';
 
   @override
   void initState() {
     _searchController = TextEditingController();
+    _filteredMembers = [];
     super.initState();
   }
 
@@ -35,7 +38,6 @@ class _SearchMembersViewState extends State<SearchMembersView> {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     myList = args['scoreList'];
     onScoreChange = args['callback'];
-    _filteredMembers = myList;
     super.didChangeDependencies();
   }
 
@@ -47,35 +49,45 @@ class _SearchMembersViewState extends State<SearchMembersView> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentSearchQuery.isEmpty) {
+      _filteredMembers = myList;
+    } else {
+      _filterMembers(_currentSearchQuery);
+    }
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          onSubmitted: (value) {
-            _searchController.clear();
+        title: Listener(
+          onPointerDown: (_) {
+            _searchFocusNode.requestFocus();
           },
-          autofocus: true,
-          controller: _searchController,
-          onChanged: (query) {
-            setState(() {
-              _filteredMembers = _filterMembers(query);
-            });
-          },
-          decoration: InputDecoration(
-            hintText: 'Search',
-            hintStyle: TextStyle(
-              color: const Color(0xff686868),
-              fontSize: context.mqSize.height * 0.019,
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: context.mqSize.width * 0.06,
-              vertical: context.mqSize.height * 0.014,
-            ),
-            filled: true,
-            fillColor: const Color(0xffEFEFEF),
-            isDense: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
+          child: TextField(
+            focusNode: _searchFocusNode,
+            onSubmitted: (value) {
+              setState(() {
+                _currentSearchQuery = value;
+              });
+              // _searchController.clear();
+            },
+            autofocus: true,
+            controller: _searchController,
+            onChanged: _filterMembers,
+            decoration: InputDecoration(
+              hintText: 'Search',
+              hintStyle: TextStyle(
+                color: const Color(0xff686868),
+                fontSize: context.mqSize.height * 0.019,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: context.mqSize.width * 0.06,
+                vertical: context.mqSize.height * 0.014,
+              ),
+              filled: true,
+              fillColor: const Color(0xffEFEFEF),
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
         ),
@@ -110,10 +122,14 @@ class _SearchMembersViewState extends State<SearchMembersView> {
     );
   }
 
-  List<Member> _filterMembers(String query) {
+  void _filterMembers(String query) {
     query = query.toLowerCase();
-    return myList
-        .where((member) => member.name.toLowerCase().contains(query))
-        .toList();
+    setState(() {
+      _currentSearchQuery = query;
+      _filteredMembers = myList
+          .where((member) =>
+              member.name.toLowerCase().contains(_currentSearchQuery))
+          .toList();
+    });
   }
 }
