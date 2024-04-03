@@ -46,7 +46,9 @@ class HomeView extends StatelessWidget {
                   iconName: 'history',
                   text: 'History',
                   size: 0.044,
-                  onPress: () {},
+                  onPress: () {
+                    Navigator.of(context).pushNamed(historyRoute);
+                  },
                 ),
               ],
             ),

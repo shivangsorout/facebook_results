@@ -68,6 +68,7 @@ Future<T?> showGenericDialog<T>({
                     fontSize: context.mqSize.height * 0.019,
                   ),
                 ),
+                SizedBox(width: context.mqSize.width * 0.014),
                 Visibility(
                   visible: value is String,
                   child: Icon(
