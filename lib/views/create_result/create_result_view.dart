@@ -29,12 +29,15 @@ class CreateResultView extends StatefulWidget {
 class _CreateResultViewState extends State<CreateResultView> with RouteAware {
   // Member? _selectedMember;
   List<Member> scoreList = [];
+  List<Member> originalList = [];
   int? sheetId;
   bool isLoading = true;
 
   @override
   void didPop() {
-    context.read<GASBloc>().add(GASEventDeleteSheet(sheetId: sheetId!));
+    if (sheetId != null) {
+      context.read<GASBloc>().add(GASEventDeleteSheet(sheetId: sheetId!));
+    }
     super.didPop();
   }
 
@@ -55,12 +58,28 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
     return BlocBuilder<GASBloc, GASState>(
       builder: (context, state) {
         if (state is GASStateCreatingResult) {
-          scoreList = state.originalMembersList;
+          if (scoreList.isEmpty && originalList.isEmpty) {
+            scoreList = state.operatedMembersList!;
+            originalList = state.originalMembersList;
+          }
           sheetId = state.sheetId;
           isLoading = state.isLoading;
         }
         return PopScope(
-          canPop: !isLoading,
+          canPop: !isLoading && areListsEqual(scoreList, originalList),
+          onPopInvoked: (didPop) {
+            if (!isLoading && !didPop) {
+              showDeleteDialog(
+                context: context,
+                content:
+                    'Are you sure that you want to go back to home page and delete this result?',
+              ).then((value) {
+                if (value) {
+                  Navigator.of(context).pop(true);
+                }
+              });
+            }
+          },
           child: Scaffold(
             appBar: AppBar(
               centerTitle: true,
@@ -195,7 +214,10 @@ void showBottomMenu({
             BottomSheetIconButton(
               onPress: () {
                 devtools.log(selectedMember.toString());
-                showDeleteDialog(context).then((value) {
+                showDeleteDialog(
+                  context: context,
+                  content: 'Are you sure you want to delete this member?',
+                ).then((value) {
                   if (value) {
                     // Add event here
                   }

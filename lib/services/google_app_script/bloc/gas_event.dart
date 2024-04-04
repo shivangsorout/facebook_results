@@ -66,10 +66,16 @@ class GASEventUpdateScoredata extends GASEvent {
   final int sheetId;
   final List<Member> scoreList;
   final bool isUpdating;
+  final bool isCopy;
 
   const GASEventUpdateScoredata({
     required this.sheetId,
     required this.scoreList,
     this.isUpdating = false,
+    this.isCopy = false,
   });
+}
+
+class GASEventResetState extends GASEvent {
+  const GASEventResetState();
 }

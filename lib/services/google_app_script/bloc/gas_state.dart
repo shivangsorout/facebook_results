@@ -6,17 +6,20 @@ import 'package:flutter/foundation.dart';
 abstract class GASState {
   final bool isLoading;
   final String? loadingText;
+  final Exception? exception;
+  final String successMessage;
 
   const GASState({
     required this.isLoading,
     this.loadingText = "Please wait a moment!",
+    this.exception,
+    this.successMessage = '',
   });
 }
 
 class GASStateCreatingResult extends GASState {
   final List<Member> originalMembersList;
   final int? sheetId;
-  final Exception? exception;
   final List<Member>? operatedMembersList;
 
   const GASStateCreatingResult({
@@ -25,7 +28,8 @@ class GASStateCreatingResult extends GASState {
     required this.originalMembersList,
     this.operatedMembersList = const [],
     this.sheetId,
-    required this.exception,
+    required super.exception,
+    super.successMessage,
   });
 }
 
@@ -36,18 +40,20 @@ class GASStateResultReady extends GASState {
     required super.isLoading,
     super.loadingText,
     required this.sortedDataList,
+    super.exception,
+    super.successMessage,
   });
 }
 
 class GASStateResultHistory extends GASState {
   final List<Sheet> sheetsList;
-  final Exception? exception;
 
   const GASStateResultHistory({
     required super.isLoading,
     super.loadingText,
     required this.sheetsList,
-    required this.exception,
+    required super.exception,
+    super.successMessage,
   });
 }
 
@@ -55,5 +61,7 @@ class GASStateEmpty extends GASState {
   const GASStateEmpty({
     required super.isLoading,
     super.loadingText,
+    super.exception,
+    super.successMessage,
   });
 }

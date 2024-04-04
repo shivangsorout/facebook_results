@@ -61,6 +61,6 @@ Future<Map<String, dynamic>> postRequest({
 void checkingResponse(dynamic response) {
   final data = response.data;
   if (data[keyStatus] != 'Success') {
-    throw Exception(data);
+    throw data;
   }
 }

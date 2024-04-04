@@ -1,8 +1,12 @@
 import 'package:facebook_results/constants/routes.dart';
 import 'package:facebook_results/helpers/loading/loading_screen.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_bloc.dart';
+import 'package:facebook_results/services/google_app_script/bloc/gas_event.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
 import 'package:facebook_results/services/google_app_script/google_app_script_service.dart';
+import 'package:facebook_results/services/google_app_script/json_constants.dart';
+import 'package:facebook_results/utility/generics/confirmation_dialog.dart';
+import 'package:facebook_results/utility/generics/error_dialog.dart';
 import 'package:facebook_results/utility/utility.dart';
 import 'package:facebook_results/views/create_result/create_result_view.dart';
 import 'package:facebook_results/views/create_result/search_members.dart';
@@ -13,6 +17,7 @@ import 'package:facebook_results/constants/theme_constant.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
 import 'package:facebook_results/views/home_view.dart';
 import 'package:flutter/material.dart';
+// import 'dart:developer' as devtools show log;
 
 void main() {
   runApp(
@@ -56,7 +61,7 @@ class MainApp extends StatelessWidget {
           resultReadyRoute: (context) => const ResultReadyView(),
           historyRoute: (context) => const HistoryView(),
         },
-        home: BlocConsumer<GASBloc, GASState>(
+        home: BlocListener<GASBloc, GASState>(
           listener: (context, state) {
             if (state.isLoading) {
               LoadingScreen().show(
@@ -67,10 +72,36 @@ class MainApp extends StatelessWidget {
             } else {
               LoadingScreen().hide();
             }
+
+            if (state.exception != null) {
+              // Extracting exception message part
+              final exception =
+                  state.exception!.toString().replaceAll('Exception: ', '');
+
+              // Extracting main error message
+              final String errorMessage = !exception.contains('{')
+                  ? exception
+                  : stringToMap(exception).containsKey(keyMessage)
+                      ? stringToMap(exception)[keyMessage]
+                      : exception;
+              showErrorDialog(context, errorMessage).then((value) {
+                if (state is GASStateCreatingResult &&
+                    (state.sheetId != null &&
+                        (ModalRoute.of(context)?.settings.name == '/' ||
+                            ModalRoute.of(context)?.settings.name ==
+                                homeRoute))) {
+                  context
+                      .read<GASBloc>()
+                      .add(GASEventDeleteSheet(sheetId: state.sheetId!));
+                }
+                context.read<GASBloc>().add(const GASEventResetState());
+              });
+            }
+            if (state.successMessage.isNotEmpty) {
+              showConfirmationDialog(context, state.successMessage);
+            }
           },
-          builder: (context, state) {
-            return const HomeView();
-          },
+          child: const HomeView(),
         ),
       ),
     );

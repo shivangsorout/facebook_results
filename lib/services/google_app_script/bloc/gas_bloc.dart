@@ -9,9 +9,10 @@ import 'package:facebook_results/services/google_app_script/models/member.dart';
 
 class GASBloc extends Bloc<GASEvent, GASState> {
   GASBloc(GoogleAppScriptService service)
-      : super(const GASStateEmpty(isLoading: true)) {
+      : super(const GASStateEmpty(isLoading: false)) {
     on<GASEventPrepareResultSheet>(
       (event, emit) async {
+        int? sheetId;
         try {
           emit(
             const GASStateCreatingResult(
@@ -22,12 +23,13 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               exception: null,
             ),
           );
-          final sheetId = await service.createNewSheet();
+          sheetId = await service.createNewSheet();
           final membersList = await service.getAllMembersData();
           emit(
             GASStateCreatingResult(
               isLoading: false,
               originalMembersList: membersList,
+              operatedMembersList: List.from(membersList),
               sheetId: sheetId,
               exception: null,
             ),
@@ -38,6 +40,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               isLoading: false,
               originalMembersList: const [],
               exception: Exception(error),
+              sheetId: sheetId,
             ),
           );
           devtools.log('Error: $error');
@@ -54,8 +57,15 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             loadingText: 'Please wait while we delete sheet!',
           ));
           await service.deleteSheet(sheetId: event.sheetId);
-          emit(const GASStateEmpty(isLoading: false));
+          emit(const GASStateEmpty(
+            isLoading: false,
+            successMessage: 'Result deleted successfully!',
+          ));
         } catch (error) {
+          emit(GASStateEmpty(
+            isLoading: false,
+            exception: Exception(error),
+          ));
           devtools.log('Error: $error');
           rethrow;
         }
@@ -75,7 +85,6 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               loadingText: 'Please wait while member is adding!',
               sheetId: currentState.sheetId,
               originalMembersList: currentState.originalMembersList,
-              operatedMembersList: currentState.operatedMembersList,
               exception: null,
             ),
           );
@@ -273,6 +282,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           final oldScoreList = currentState.originalMembersList;
           final updatedScoreList = event.scoreList;
           final isUpdating = event.isUpdating;
+          final isCopy = event.isCopy;
           final sheetId = event.sheetId;
           final Map<String, dynamic> scoredata = {};
 
@@ -285,38 +295,42 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             ),
           );
 
-          if (isUpdating) {
-            for (var updatedMember in updatedScoreList) {
-              final exist = oldScoreList.contains(updatedMember);
+          if (!isCopy) {
+            if (isUpdating) {
+              for (var updatedMember in updatedScoreList) {
+                final exist = oldScoreList.contains(updatedMember);
 
-              if (exist) {
-                final oldData = oldScoreList.firstWhere(
-                  (listMember) => listMember == updatedMember,
-                );
+                if (exist) {
+                  final oldData = oldScoreList.firstWhere(
+                    (listMember) => listMember == updatedMember,
+                  );
 
-                if (oldData.isAdmin != updatedMember.isAdmin ||
-                    oldData.score != updatedMember.score ||
-                    oldData.name != updatedMember.name) {
+                  if (oldData.isAdmin != updatedMember.isAdmin ||
+                      oldData.score != updatedMember.score ||
+                      oldData.name != updatedMember.name) {
+                    scoredataEntryForUpdateCall(scoredata, updatedMember);
+                  }
+                }
+                // This is for the new member added case.
+                else {
                   scoredataEntryForUpdateCall(scoredata, updatedMember);
                 }
               }
-              // This is for the new member added case.
-              else {
+            } else {
+              for (var updatedMember in updatedScoreList) {
                 scoredataEntryForUpdateCall(scoredata, updatedMember);
               }
             }
+
+            updatedScoreList.sort((a, b) => b.score!.compareTo(a.score!));
+
+            await service.updateScoreData(
+              sheetId: sheetId,
+              scoredata: scoredata,
+            );
           } else {
-            for (var updatedMember in updatedScoreList) {
-              scoredataEntryForUpdateCall(scoredata, updatedMember);
-            }
+            updatedScoreList.sort((a, b) => b.score!.compareTo(a.score!));
           }
-
-          updatedScoreList.sort((a, b) => b.score!.compareTo(a.score!));
-
-          await service.updateScoreData(
-            sheetId: sheetId,
-            scoredata: scoredata,
-          );
           emit(GASStateResultReady(
             isLoading: false,
             sortedDataList: updatedScoreList,
@@ -324,6 +338,49 @@ class GASBloc extends Bloc<GASEvent, GASState> {
         } catch (error) {
           devtools.log('Error: $error');
           rethrow;
+        }
+      },
+    );
+
+    on<GASEventResetState>(
+      (event, emit) {
+        if (state is GASStateCreatingResult) {
+          final currentState = state as GASStateCreatingResult;
+          emit(GASStateCreatingResult(
+            isLoading: currentState.isLoading,
+            originalMembersList: currentState.originalMembersList,
+            exception: null,
+            loadingText: currentState.loadingText,
+            operatedMembersList: currentState.operatedMembersList,
+            sheetId: currentState.sheetId,
+            successMessage: currentState.successMessage,
+          ));
+        } else if (state is GASStateEmpty) {
+          final currentState = state as GASStateEmpty;
+          emit(GASStateEmpty(
+            isLoading: currentState.isLoading,
+            exception: null,
+            loadingText: currentState.loadingText,
+            successMessage: currentState.successMessage,
+          ));
+        } else if (state is GASStateResultHistory) {
+          final currentState = state as GASStateResultHistory;
+          emit(GASStateResultHistory(
+            isLoading: currentState.isLoading,
+            sheetsList: currentState.sheetsList,
+            exception: null,
+            loadingText: currentState.loadingText,
+            successMessage: currentState.successMessage,
+          ));
+        } else if (state is GASStateResultReady) {
+          final currentState = state as GASStateResultReady;
+          emit(GASStateResultReady(
+            isLoading: currentState.isLoading,
+            sortedDataList: currentState.sortedDataList,
+            exception: null,
+            loadingText: currentState.loadingText,
+            successMessage: currentState.successMessage,
+          ));
         }
       },
     );
