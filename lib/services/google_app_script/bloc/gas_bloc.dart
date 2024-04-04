@@ -74,11 +74,11 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventAddMember>(
       (event, emit) async {
+        late final GASStateCreatingResult currentState;
+        if (state is GASStateCreatingResult) {
+          currentState = state as GASStateCreatingResult;
+        }
         try {
-          late final GASStateCreatingResult currentState;
-          if (state is GASStateCreatingResult) {
-            currentState = state as GASStateCreatingResult;
-          }
           emit(
             GASStateCreatingResult(
               isLoading: true,
@@ -112,10 +112,18 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               sheetId: currentState.sheetId,
               operatedMembersList: scoreList,
               exception: null,
+              successMessage: 'Member added successfully!',
             ),
           );
         } catch (error) {
           devtools.log('Error: $error');
+          emit(GASStateCreatingResult(
+            isLoading: false,
+            originalMembersList: currentState.originalMembersList,
+            operatedMembersList: currentState.operatedMembersList,
+            sheetId: currentState.sheetId,
+            exception: Exception(error),
+          ));
           rethrow;
         }
       },
@@ -123,11 +131,11 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventUpdateMember>(
       (event, emit) async {
+        late final GASStateCreatingResult currentState;
+        if (state is GASStateCreatingResult) {
+          currentState = state as GASStateCreatingResult;
+        }
         try {
-          late final GASStateCreatingResult currentState;
-          if (state is GASStateCreatingResult) {
-            currentState = state as GASStateCreatingResult;
-          }
           emit(
             GASStateCreatingResult(
               isLoading: true,
@@ -147,7 +155,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           final updateIndex =
               scoreList.indexWhere((listmember) => listmember == member);
           if (updateIndex > -1) {
-            scoreList.insert(updateIndex, member);
+            scoreList[updateIndex] = member;
           } else {
             throw Exception(
               'The member you are trying to update doesn\'t exist!',
@@ -160,10 +168,18 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               sheetId: currentState.sheetId,
               operatedMembersList: scoreList,
               exception: null,
+              successMessage: 'Member updated successfully!',
             ),
           );
         } catch (error) {
           devtools.log('Error: $error');
+          emit(GASStateCreatingResult(
+            isLoading: false,
+            originalMembersList: currentState.originalMembersList,
+            operatedMembersList: currentState.operatedMembersList,
+            sheetId: currentState.sheetId,
+            exception: Exception(error),
+          ));
           rethrow;
         }
       },
@@ -171,11 +187,11 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventDeleteMember>(
       (event, emit) async {
+        late final GASStateCreatingResult currentState;
+        if (state is GASStateCreatingResult) {
+          currentState = state as GASStateCreatingResult;
+        }
         try {
-          late final GASStateCreatingResult currentState;
-          if (state is GASStateCreatingResult) {
-            currentState = state as GASStateCreatingResult;
-          }
           final memberToBeDeleted = event.member;
           final scoreList = event.scoreList;
           final sheetId = event.sheetId;
@@ -208,10 +224,18 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               operatedMembersList: scoreList,
               sheetId: currentState.sheetId,
               exception: null,
+              successMessage: 'Member deleted successfully!',
             ),
           );
         } catch (error) {
           devtools.log('Error: $error');
+          emit(GASStateCreatingResult(
+            isLoading: false,
+            originalMembersList: currentState.originalMembersList,
+            operatedMembersList: currentState.operatedMembersList,
+            sheetId: currentState.sheetId,
+            exception: Exception(error),
+          ));
           rethrow;
         }
       },

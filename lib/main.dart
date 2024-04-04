@@ -54,6 +54,7 @@ class MainApp extends StatelessWidget {
             background: appBackgroundColor,
           ),
         ),
+        initialRoute: null,
         routes: {
           homeRoute: (context) => const HomeView(),
           createResultRoute: (context) => const CreateResultView(),
@@ -63,6 +64,7 @@ class MainApp extends StatelessWidget {
         },
         home: BlocListener<GASBloc, GASState>(
           listener: (context, state) {
+            /// Loading checks
             if (state.isLoading) {
               LoadingScreen().show(
                 context: context,
@@ -73,6 +75,7 @@ class MainApp extends StatelessWidget {
               LoadingScreen().hide();
             }
 
+            /// Error checks
             if (state.exception != null) {
               // Extracting exception message part
               final exception =
@@ -84,19 +87,26 @@ class MainApp extends StatelessWidget {
                   : stringToMap(exception).containsKey(keyMessage)
                       ? stringToMap(exception)[keyMessage]
                       : exception;
+
+              // Showing error
               showErrorDialog(context, errorMessage).then((value) {
-                if (state is GASStateCreatingResult &&
-                    (state.sheetId != null &&
-                        (ModalRoute.of(context)?.settings.name == '/' ||
-                            ModalRoute.of(context)?.settings.name ==
-                                homeRoute))) {
-                  context
-                      .read<GASBloc>()
-                      .add(GASEventDeleteSheet(sheetId: state.sheetId!));
-                }
+                // If app is at HomeView and we have sheet Id then we will delete it
+                // if (state is GASStateCreatingResult &&
+                //     (state.sheetId != null &&
+                //         (ModalRoute.of(context)?.settings.name == '/' ||
+                //             ModalRoute.of(context)?.settings.name ==
+                //                 homeRoute))) {
+                //   context
+                //       .read<GASBloc>()
+                //       .add(GASEventDeleteSheet(sheetId: state.sheetId!));
+                // }
+
+                // Resetting error state
                 context.read<GASBloc>().add(const GASEventResetState());
               });
             }
+
+            // If there is any success message
             if (state.successMessage.isNotEmpty) {
               showConfirmationDialog(context, state.successMessage);
             }

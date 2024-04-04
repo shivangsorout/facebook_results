@@ -1,3 +1,4 @@
+import 'package:facebook_results/constants/constants.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
 import 'package:facebook_results/helpers/custom_widgets/result_list_tile.dart';
 import 'package:facebook_results/services/google_app_script/models/member.dart';
@@ -24,6 +25,8 @@ class _SearchMembersViewState extends State<SearchMembersView> {
   late List<Member> myList;
   final FocusNode _searchFocusNode = FocusNode();
   String _currentSearchQuery = '';
+  bool isUpdating = false;
+  int? sheetId;
 
   @override
   void initState() {
@@ -36,8 +39,10 @@ class _SearchMembersViewState extends State<SearchMembersView> {
   void didChangeDependencies() {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    myList = args['scoreList'];
-    onScoreChange = args['callback'];
+    myList = args[argKeyScoreList];
+    onScoreChange = args[argKeyCallback];
+    isUpdating = args[argKeyIsUpdating];
+    sheetId = args[argKeySheetId];
     super.didChangeDependencies();
   }
 
@@ -114,6 +119,9 @@ class _SearchMembersViewState extends State<SearchMembersView> {
                       context: context,
                       selectedMember: member,
                       index: index,
+                      isUpdating: isUpdating,
+                      scoreList: myList,
+                      sheetId: sheetId,
                     );
                   },
                 );

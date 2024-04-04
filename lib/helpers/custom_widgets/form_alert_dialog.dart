@@ -121,6 +121,7 @@ class _FormAlertDialogState extends State<FormAlertDialog> {
                           score: score,
                         );
                         widget.onSubmit(member);
+                        Navigator.of(context).pop(true);
                       }
                     },
                     color: Colors.black,

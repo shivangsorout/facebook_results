@@ -1,3 +1,4 @@
+import 'package:facebook_results/constants/constants.dart';
 import 'package:facebook_results/constants/routes.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
 import 'package:facebook_results/helpers/custom_widgets/form_alert_dialog.dart';
@@ -16,10 +17,8 @@ import 'dart:developer' as devtools show log;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateResultView extends StatefulWidget {
-  final bool isUpdating;
   const CreateResultView({
     super.key,
-    this.isUpdating = false,
   });
 
   @override
@@ -32,6 +31,7 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
   List<Member> originalList = [];
   int? sheetId;
   bool isLoading = true;
+  bool isUpdating = false;
 
   @override
   void didPop() {
@@ -44,6 +44,11 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
   @override
   void didChangeDependencies() {
     routeObserver.subscribe(this, ModalRoute.of(context)!);
+    if (ModalRoute.of(context)!.settings.arguments != null) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      isUpdating = args[argKeyIsUpdating];
+    }
     super.didChangeDependencies();
   }
 
@@ -88,12 +93,16 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                 IconSVGButton(
                   iconName: 'add',
                   onPress: () async {
-                    // devtools.log(_selectedMember.toString());
                     await showAlertDialog(
                       context,
                       onSubmit: (memberS) {
                         devtools.log(memberS.toString());
-                        // Navigator.of(context).pop(true);
+                        context.read<GASBloc>().add(GASEventAddMember(
+                              memberName: memberS.name,
+                              scoreList: scoreList,
+                              isAdmin: memberS.isAdmin,
+                              score: memberS.score!,
+                            ));
                       },
                     );
                   },
@@ -107,12 +116,14 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                     Navigator.of(context).pushNamed(
                       searchMembersRoute,
                       arguments: {
-                        'scoreList': scoreList,
+                        argKeyScoreList: scoreList,
                         // <Member>[
                         //   Member(id: '23232', name: "Rafi Ahmed", isAdmin: true),
                         //   Member(id: '23233', name: "Ravi Singh", isAdmin: false)
                         // ],
-                        'callback': onScoreChange,
+                        argKeyCallback: onScoreChange,
+                        argKeyIsUpdating: isUpdating,
+                        argKeySheetId: sheetId,
                       },
                     );
                   },
@@ -152,6 +163,8 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
               itemCount: scoreList.length,
               // itemCount: 1,
               itemBuilder: (context, index) {
+                scoreList.sort((a, b) =>
+                    a.name.toLowerCase().compareTo(b.name.toLowerCase()));
                 return ResultListTile(
                   member: scoreList[index],
                   // Member(
@@ -165,6 +178,9 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                       selectedMember: member,
                       // globalMember: _selectedMember,
                       index: index,
+                      isUpdating: isUpdating,
+                      scoreList: scoreList,
+                      sheetId: sheetId,
                     );
                   },
                 );
@@ -191,6 +207,9 @@ void showBottomMenu({
   required int index,
   // required Member? globalMember,
   required BuildContext context,
+  required bool isUpdating,
+  required List<Member> scoreList,
+  required int? sheetId,
 }) {
   // globalMember = selectedMember;
 
@@ -219,7 +238,11 @@ void showBottomMenu({
                   content: 'Are you sure you want to delete this member?',
                 ).then((value) {
                   if (value) {
-                    // Add event here
+                    context.read<GASBloc>().add(GASEventDeleteMember(
+                          member: selectedMember,
+                          scoreList: scoreList,
+                          sheetId: isUpdating ? sheetId : null,
+                        ));
                   }
                   _disposingSelectedMember(
                     context: context,
@@ -235,13 +258,15 @@ void showBottomMenu({
               buttonName: 'Edit',
               sizeFactor: 0.028,
               onPress: () {
-                // devtools.log(member.toString());
                 showAlertDialog(
                   context,
                   member: selectedMember,
                   onSubmit: (memberS) {
                     devtools.log(memberS.toString());
-                    // Navigator.of(context).pop(true);
+                    context.read<GASBloc>().add(GASEventUpdateMember(
+                          member: memberS,
+                          scoreList: scoreList,
+                        ));
                   },
                 ).then((value) {
                   _disposingSelectedMember(
