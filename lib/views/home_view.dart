@@ -5,6 +5,7 @@ import 'package:facebook_results/helpers/custom_widgets/home_view_button.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_bloc.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_event.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
+import 'package:facebook_results/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,7 +17,8 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GASBloc, GASState>(
+    return BlocConsumer<GASBloc, GASState>(
+      listener: listenerFunction,
       builder: (context, state) {
         return PopScope(
           canPop: !state.isLoading,

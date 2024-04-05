@@ -77,5 +77,8 @@ class GASEventUpdateScoredata extends GASEvent {
 }
 
 class GASEventResetState extends GASEvent {
-  const GASEventResetState();
+  final bool shouldEmptyState;
+  const GASEventResetState({
+    this.shouldEmptyState = false,
+  });
 }

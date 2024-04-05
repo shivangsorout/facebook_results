@@ -135,9 +135,16 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                   width: context.mqSize.width * 0.14,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context)
-                          .pushNamedAndRemoveUntil(homeRoute, (route) => false);
-                      Navigator.of(context).pushNamed(resultReadyRoute);
+                      context.read<GASBloc>().add(GASEventUpdateScoredata(
+                            sheetId: sheetId!,
+                            scoreList: scoreList,
+                            isUpdating: isUpdating,
+                          ));
+                      if (!state.isLoading) {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            homeRoute, (route) => false);
+                        Navigator.of(context).pushNamed(resultReadyRoute);
+                      }
                     },
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.grey[400]),

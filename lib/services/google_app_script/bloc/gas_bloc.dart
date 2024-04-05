@@ -298,13 +298,13 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventUpdateScoredata>(
       (event, emit) async {
+        late final GASStateCreatingResult currentState;
+        if (state is GASStateCreatingResult) {
+          currentState = state as GASStateCreatingResult;
+        }
+        final updatedScoreList = event.scoreList;
         try {
-          late final GASStateCreatingResult currentState;
-          if (state is GASStateCreatingResult) {
-            currentState = state as GASStateCreatingResult;
-          }
           final oldScoreList = currentState.originalMembersList;
-          final updatedScoreList = event.scoreList;
           final isUpdating = event.isUpdating;
           final isCopy = event.isCopy;
           final sheetId = event.sheetId;
@@ -346,21 +346,30 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               }
             }
 
-            updatedScoreList.sort((a, b) => b.score!.compareTo(a.score!));
+            updatedScoreList
+                .sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
 
             await service.updateScoreData(
               sheetId: sheetId,
               scoredata: scoredata,
             );
           } else {
-            updatedScoreList.sort((a, b) => b.score!.compareTo(a.score!));
+            updatedScoreList
+                .sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
           }
           emit(GASStateResultReady(
             isLoading: false,
             sortedDataList: updatedScoreList,
+            successMessage: 'Result added successfully!',
           ));
+          if (state is GASStateResultReady) {}
         } catch (error) {
           devtools.log('Error: $error');
+          emit(GASStateResultReady(
+            isLoading: false,
+            sortedDataList: updatedScoreList,
+            exception: Exception(error),
+          ));
           rethrow;
         }
       },
@@ -368,42 +377,50 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventResetState>(
       (event, emit) {
-        if (state is GASStateCreatingResult) {
-          final currentState = state as GASStateCreatingResult;
-          emit(GASStateCreatingResult(
-            isLoading: currentState.isLoading,
-            originalMembersList: currentState.originalMembersList,
-            exception: null,
-            loadingText: currentState.loadingText,
-            operatedMembersList: currentState.operatedMembersList,
-            sheetId: currentState.sheetId,
-            successMessage: currentState.successMessage,
-          ));
-        } else if (state is GASStateEmpty) {
-          final currentState = state as GASStateEmpty;
-          emit(GASStateEmpty(
-            isLoading: currentState.isLoading,
-            exception: null,
-            loadingText: currentState.loadingText,
-            successMessage: currentState.successMessage,
-          ));
-        } else if (state is GASStateResultHistory) {
-          final currentState = state as GASStateResultHistory;
-          emit(GASStateResultHistory(
-            isLoading: currentState.isLoading,
-            sheetsList: currentState.sheetsList,
-            exception: null,
-            loadingText: currentState.loadingText,
-            successMessage: currentState.successMessage,
-          ));
-        } else if (state is GASStateResultReady) {
-          final currentState = state as GASStateResultReady;
-          emit(GASStateResultReady(
-            isLoading: currentState.isLoading,
-            sortedDataList: currentState.sortedDataList,
-            exception: null,
-            loadingText: currentState.loadingText,
-            successMessage: currentState.successMessage,
+        final shouldEmptyState = event.shouldEmptyState;
+
+        if (!shouldEmptyState) {
+          if (state is GASStateCreatingResult) {
+            final currentState = state as GASStateCreatingResult;
+            emit(GASStateCreatingResult(
+              isLoading: currentState.isLoading,
+              originalMembersList: currentState.originalMembersList,
+              exception: null,
+              loadingText: currentState.loadingText,
+              operatedMembersList: currentState.operatedMembersList,
+              sheetId: currentState.sheetId,
+              successMessage: currentState.successMessage,
+            ));
+          } else if (state is GASStateEmpty) {
+            final currentState = state as GASStateEmpty;
+            emit(GASStateEmpty(
+              isLoading: currentState.isLoading,
+              exception: null,
+              loadingText: currentState.loadingText,
+              successMessage: currentState.successMessage,
+            ));
+          } else if (state is GASStateResultHistory) {
+            final currentState = state as GASStateResultHistory;
+            emit(GASStateResultHistory(
+              isLoading: currentState.isLoading,
+              sheetsList: currentState.sheetsList,
+              exception: null,
+              loadingText: currentState.loadingText,
+              successMessage: currentState.successMessage,
+            ));
+          } else if (state is GASStateResultReady) {
+            final currentState = state as GASStateResultReady;
+            emit(GASStateResultReady(
+              isLoading: currentState.isLoading,
+              sortedDataList: currentState.sortedDataList,
+              exception: null,
+              loadingText: currentState.loadingText,
+              successMessage: currentState.successMessage,
+            ));
+          }
+        } else {
+          emit(const GASStateEmpty(
+            isLoading: false,
           ));
         }
       },
