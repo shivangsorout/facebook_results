@@ -35,7 +35,7 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
 
   @override
   void didPop() {
-    if (sheetId != null) {
+    if (sheetId != null && !isUpdating) {
       context.read<GASBloc>().add(GASEventDeleteSheet(sheetId: sheetId!));
     }
     super.didPop();

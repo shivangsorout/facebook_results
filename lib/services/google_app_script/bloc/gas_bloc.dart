@@ -259,6 +259,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             GASStateCreatingResult(
               isLoading: false,
               originalMembersList: dataList,
+              operatedMembersList: List.from(dataList),
               sheetId: sheetId,
               exception: null,
             ),
@@ -299,14 +300,15 @@ class GASBloc extends Bloc<GASEvent, GASState> {
     on<GASEventUpdateScoredata>(
       (event, emit) async {
         late final GASStateCreatingResult currentState;
+        List<Member> oldScoreList = [];
         if (state is GASStateCreatingResult) {
           currentState = state as GASStateCreatingResult;
+          oldScoreList = currentState.originalMembersList;
         }
-        final updatedScoreList = event.scoreList;
+        final isCopy = event.isCopy;
+        List<Member> updatedScoreList = isCopy ? [] : event.scoreList;
         try {
-          final oldScoreList = currentState.originalMembersList;
           final isUpdating = event.isUpdating;
-          final isCopy = event.isCopy;
           final sheetId = event.sheetId;
           final Map<String, dynamic> scoredata = {};
 
@@ -349,11 +351,15 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             updatedScoreList
                 .sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
 
-            await service.updateScoreData(
-              sheetId: sheetId,
-              scoredata: scoredata,
-            );
+            if (scoredata.isNotEmpty) {
+              await service.updateScoreData(
+                sheetId: sheetId,
+                scoredata: scoredata,
+              );
+            }
           } else {
+            updatedScoreList =
+                await service.getAllMembersData(sheetId: sheetId);
             updatedScoreList
                 .sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
           }
@@ -362,7 +368,6 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             sortedDataList: updatedScoreList,
             successMessage: 'Result added successfully!',
           ));
-          if (state is GASStateResultReady) {}
         } catch (error) {
           devtools.log('Error: $error');
           emit(GASStateResultReady(

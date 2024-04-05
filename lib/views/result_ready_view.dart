@@ -36,7 +36,7 @@ class _ResultReadyViewState extends State<ResultReadyView> {
     return BlocBuilder<GASBloc, GASState>(
       builder: (context, state) {
         if (state is GASStateResultReady) {
-          sortedMembers = state.sortedDataList;
+          sortedMembers = List.from(state.sortedDataList);
           if (_textController.text.isEmpty) {
             _textController.text = generateScoreText(sortedMembers);
           }

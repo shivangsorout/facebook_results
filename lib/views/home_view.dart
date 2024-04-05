@@ -61,6 +61,9 @@ class HomeView extends StatelessWidget {
                         text: 'History',
                         size: 0.044,
                         onPress: () {
+                          context
+                              .read<GASBloc>()
+                              .add(const GASEventHistorySheets());
                           Navigator.of(context).pushNamed(historyRoute);
                         },
                       ),

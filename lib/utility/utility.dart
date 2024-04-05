@@ -112,6 +112,9 @@ String generateScoreText(List<Member> sortedMembers) {
                 ? '\n\n${memberInner.name}'
                 : '');
         memberScore = memberInner.score;
+      } else if (memberInner.score == null) {
+        result += dots + memberScore.toString();
+        memberScore = memberInner.score;
       }
     }
   }
