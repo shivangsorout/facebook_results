@@ -243,8 +243,8 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventGetSheetData>(
       (event, emit) async {
+        final sheetId = event.sheetId;
         try {
-          final sheetId = event.sheetId;
           emit(
             GASStateCreatingResult(
               isLoading: true,
@@ -266,6 +266,11 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           );
         } catch (error) {
           devtools.log('Error: $error');
+          emit(GASStateCreatingResult(
+            isLoading: false,
+            originalMembersList: const [],
+            exception: Exception(error),
+          ));
           rethrow;
         }
       },
@@ -292,6 +297,13 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           );
         } catch (error) {
           devtools.log('Error: $error');
+          emit(
+            GASStateResultHistory(
+              isLoading: false,
+              sheetsList: const [],
+              exception: Exception(error),
+            ),
+          );
           rethrow;
         }
       },
@@ -305,7 +317,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           oldScoreList = currentState.originalMembersList;
         } else if (state is GASStateResultReady) {
           final currentState = state as GASStateResultReady;
-          oldScoreList = currentState.originalDataList;
+          oldScoreList = currentState.sortedDataList;
         }
         final isCopy = event.isCopy;
         List<Member> updatedScoreList = isCopy ? [] : event.scoreList;

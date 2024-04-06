@@ -64,7 +64,7 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
       builder: (context, state) {
         if (state is GASStateCreatingResult) {
           if (scoreList.isEmpty && originalList.isEmpty) {
-            scoreList = state.operatedMembersList!;
+            scoreList = state.operatedMembersList ?? [];
             originalList = state.originalMembersList;
           }
           sheetId = state.sheetId;
@@ -137,7 +137,7 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                     onPressed: () {
                       context.read<GASBloc>().add(GASEventUpdateScoredata(
                             sheetId: sheetId!,
-                            scoreList: scoreList,
+                            scoreList: List.from(scoreList),
                             isUpdating: isUpdating,
                           ));
                       Navigator.of(context)
