@@ -299,11 +299,13 @@ class GASBloc extends Bloc<GASEvent, GASState> {
 
     on<GASEventUpdateScoredata>(
       (event, emit) async {
-        late final GASStateCreatingResult currentState;
         List<Member> oldScoreList = [];
         if (state is GASStateCreatingResult) {
-          currentState = state as GASStateCreatingResult;
+          final currentState = state as GASStateCreatingResult;
           oldScoreList = currentState.originalMembersList;
+        } else if (state is GASStateResultReady) {
+          final currentState = state as GASStateResultReady;
+          oldScoreList = currentState.originalDataList;
         }
         final isCopy = event.isCopy;
         List<Member> updatedScoreList = isCopy ? [] : event.scoreList;
@@ -318,6 +320,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
               loadingText:
                   'Please wait while your result is ${isUpdating ? 'updating' : 'adding'}!',
               sortedDataList: const [],
+              originalDataList: const [],
             ),
           );
 
@@ -366,6 +369,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           emit(GASStateResultReady(
             isLoading: false,
             sortedDataList: updatedScoreList,
+            originalDataList: oldScoreList,
             successMessage: 'Result added successfully!',
           ));
         } catch (error) {
@@ -373,6 +377,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
           emit(GASStateResultReady(
             isLoading: false,
             sortedDataList: updatedScoreList,
+            originalDataList: oldScoreList,
             exception: Exception(error),
           ));
           rethrow;
@@ -418,6 +423,7 @@ class GASBloc extends Bloc<GASEvent, GASState> {
             emit(GASStateResultReady(
               isLoading: currentState.isLoading,
               sortedDataList: currentState.sortedDataList,
+              originalDataList: currentState.originalDataList,
               exception: null,
               loadingText: currentState.loadingText,
               successMessage: currentState.successMessage,

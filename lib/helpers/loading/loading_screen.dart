@@ -65,7 +65,7 @@ class LoadingScreen {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: context.mqSize.height * 0.011),
-                      const CircularProgressIndicator(),
+                      const CircularProgressIndicator(color: Colors.black),
                       SizedBox(height: context.mqSize.height * 0.022),
                       StreamBuilder(
                         stream: _text.stream,
@@ -74,6 +74,9 @@ class LoadingScreen {
                             return Text(
                               snapshot.data as String,
                               textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: context.mqSize.height * 0.02,
+                              ),
                             );
                           } else {
                             return Container();

@@ -140,11 +140,15 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                             scoreList: scoreList,
                             isUpdating: isUpdating,
                           ));
-                      if (!state.isLoading) {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                            homeRoute, (route) => false);
-                        Navigator.of(context).pushNamed(resultReadyRoute);
-                      }
+                      Navigator.of(context)
+                          .pushNamed(resultReadyRoute)
+                          .then((value) {
+                        if (!isUpdating) {
+                          setState(() {
+                            isUpdating = true;
+                          });
+                        }
+                      });
                     },
                     style: ButtonStyle(
                       overlayColor: MaterialStateProperty.all(Colors.grey[400]),

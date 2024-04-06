@@ -35,11 +35,13 @@ class GASStateCreatingResult extends GASState {
 
 class GASStateResultReady extends GASState {
   final List<Member> sortedDataList;
+  final List<Member> originalDataList;
 
   const GASStateResultReady({
     required super.isLoading,
     super.loadingText,
     required this.sortedDataList,
+    required this.originalDataList,
     super.exception,
     super.successMessage,
   });

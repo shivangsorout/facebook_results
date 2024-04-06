@@ -6,6 +6,7 @@ import 'package:facebook_results/services/google_app_script/bloc/gas_event.dart'
 import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
 import 'package:facebook_results/services/google_app_script/models/sheet.dart';
 import 'package:facebook_results/utility/generics/edit_and_copy_dialog.dart';
+import 'package:facebook_results/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -20,15 +21,37 @@ class HistoryView extends StatefulWidget {
   State<HistoryView> createState() => _HistoryViewState();
 }
 
-class _HistoryViewState extends State<HistoryView> {
+class _HistoryViewState extends State<HistoryView> with RouteAware {
   List<Sheet> historySheets = [];
+
+  @override
+  void didPop() {
+    context.read<GASBloc>().add(
+          const GASEventResetState(shouldEmptyState: true),
+        );
+    super.didPop();
+  }
+
+  @override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GASBloc, GASState>(
       builder: (context, state) {
         if (state is GASStateResultHistory) {
           if (historySheets.isEmpty) {
-            historySheets = List.from(state.sheetsList);
+            historySheets =
+                List.from(state.sheetsList.isNotEmpty ? state.sheetsList : []);
             historySheets.sort((a, b) =>
                 int.tryParse(b.name)!.compareTo(int.tryParse(a.name)!));
           }
@@ -40,96 +63,111 @@ class _HistoryViewState extends State<HistoryView> {
               title: const Text('History'),
               centerTitle: true,
             ),
-            body: ListView.builder(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.mqSize.width * 0.044,
-                vertical: context.mqSize.height * 0.011,
-              ),
-              itemBuilder: (context, index) {
-                final Sheet historySheet = historySheets[index];
-
-                // Getting time in epoch
-                int epochTime = int.parse(historySheet.name) * 1000;
-
-                // Getting time in DateTime
-                DateTime dateTime =
-                    DateTime.fromMillisecondsSinceEpoch(epochTime);
-
-                // Format the date and time
-                String formattedDate = DateFormat('d MMM, yyyy')
-                    .format(dateTime); // Format for date
-                String formattedTime =
-                    DateFormat('hh:mm a').format(dateTime); // Format for time
-
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                      vertical: context.mqSize.height * 0.007),
-                  child: Material(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    elevation: 4,
-                    child: ListTile(
-                      onTap: () {
-                        showEditAndCopyDialog(context).then((value) {
-                          if (value == 'Edit') {
-                            context.read<GASBloc>().add(
-                                  GASEventGetSheetData(
-                                    sheetId: int.parse(historySheet.id),
-                                  ),
-                                );
-                            Navigator.of(context).pushNamed(
-                              createResultRoute,
-                              arguments: {
-                                argKeyIsUpdating: true,
-                              },
-                            );
-                          } else if (value == 'Copy') {
-                            context.read<GASBloc>().add(
-                                  GASEventUpdateScoredata(
-                                    sheetId: int.parse(historySheet.id),
-                                    scoreList: const [],
-                                    isCopy: true,
-                                  ),
-                                );
-                            Navigator.of(context).pushNamed(resultReadyRoute);
-                          }
-                        });
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: context.mqSize.width * 0.05,
-                        vertical: context.mqSize.height * 0.012,
-                      ),
-                      tileColor: Colors.white,
-                      leading: SvgPicture.asset(
-                        'assets/icons/calendar.svg',
-                        height: context.mqSize.height * 0.041,
-                      ),
-                      title: Text(
-                        formattedDate,
-                        style: TextStyle(
-                          fontSize: context.mqSize.height * 0.021,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+            body: state.isLoading
+                ? Container()
+                : historySheets.isEmpty
+                    ? Padding(
+                        padding: EdgeInsets.all(context.mqSize.height * 0.016),
+                        child: Text(
+                          'No history exist at the moment!',
+                          style: TextStyle(
+                            fontSize: context.mqSize.height * 0.023,
+                          ),
                         ),
-                      ),
-                      trailing: Text(
-                        formattedTime,
-                        style: TextStyle(
-                          fontSize: context.mqSize.height * 0.021,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xffA4A4A4),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.mqSize.width * 0.044,
+                          vertical: context.mqSize.height * 0.011,
                         ),
+                        itemBuilder: (context, index) {
+                          final Sheet historySheet = historySheets[index];
+
+                          // Getting time in epoch
+                          int epochTime = int.parse(historySheet.name) * 1000;
+
+                          // Getting time in DateTime
+                          DateTime dateTime =
+                              DateTime.fromMillisecondsSinceEpoch(epochTime);
+
+                          // Format the date and time
+                          String formattedDate = DateFormat('d MMM, yyyy')
+                              .format(dateTime); // Format for date
+                          String formattedTime = DateFormat('hh:mm a')
+                              .format(dateTime); // Format for time
+
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: context.mqSize.height * 0.007),
+                            child: Material(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              elevation: 4,
+                              child: ListTile(
+                                onTap: () {
+                                  showEditAndCopyDialog(context).then((value) {
+                                    if (value == 'Edit') {
+                                      context.read<GASBloc>().add(
+                                            GASEventGetSheetData(
+                                              sheetId:
+                                                  int.parse(historySheet.id),
+                                            ),
+                                          );
+                                      Navigator.of(context).pushNamed(
+                                        createResultRoute,
+                                        arguments: {
+                                          argKeyIsUpdating: true,
+                                        },
+                                      );
+                                    } else if (value == 'Copy') {
+                                      context.read<GASBloc>().add(
+                                            GASEventUpdateScoredata(
+                                              sheetId:
+                                                  int.parse(historySheet.id),
+                                              scoreList: const [],
+                                              isCopy: true,
+                                            ),
+                                          );
+                                      Navigator.of(context)
+                                          .pushNamed(resultReadyRoute);
+                                    }
+                                  });
+                                },
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: context.mqSize.width * 0.05,
+                                  vertical: context.mqSize.height * 0.012,
+                                ),
+                                tileColor: Colors.white,
+                                leading: SvgPicture.asset(
+                                  'assets/icons/calendar.svg',
+                                  height: context.mqSize.height * 0.041,
+                                ),
+                                title: Text(
+                                  formattedDate,
+                                  style: TextStyle(
+                                    fontSize: context.mqSize.height * 0.021,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                trailing: Text(
+                                  formattedTime,
+                                  style: TextStyle(
+                                    fontSize: context.mqSize.height * 0.021,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xffA4A4A4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        itemCount: historySheets.length,
                       ),
-                    ),
-                  ),
-                );
-              },
-              itemCount: historySheets.length,
-            ),
           ),
         );
       },
