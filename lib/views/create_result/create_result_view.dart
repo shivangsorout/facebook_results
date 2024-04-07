@@ -131,39 +131,36 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                 SizedBox(
                   width: context.mqSize.width * 0.02,
                 ),
-                SizedBox(
-                  width: context.mqSize.width * 0.14,
-                  child: TextButton(
-                    onPressed: () {
-                      context.read<GASBloc>().add(GASEventUpdateScoredata(
-                            sheetId: sheetId!,
-                            scoreList: List.from(scoreList),
-                            isUpdating: isUpdating,
-                          ));
-                      Navigator.of(context)
-                          .pushNamed(resultReadyRoute)
-                          .then((value) {
-                        if (!isUpdating) {
-                          setState(() {
-                            isUpdating = true;
-                          });
-                        }
-                      });
-                    },
-                    style: ButtonStyle(
-                      overlayColor: MaterialStateProperty.all(Colors.grey[400]),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
+                TextButton(
+                  onPressed: () {
+                    context.read<GASBloc>().add(GASEventUpdateScoredata(
+                          sheetId: sheetId!,
+                          scoreList: List.from(scoreList),
+                          isUpdating: isUpdating,
+                        ));
+                    Navigator.of(context)
+                        .pushNamed(resultReadyRoute)
+                        .then((value) {
+                      if (!isUpdating) {
+                        setState(() {
+                          isUpdating = true;
+                        });
+                      }
+                    });
+                  },
+                  style: ButtonStyle(
+                    overlayColor: MaterialStateProperty.all(Colors.grey[400]),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
                       ),
                     ),
-                    child: const Text(
-                      'NEXT',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
+                  ),
+                  child: const Text(
+                    'NEXT',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
                     ),
                   ),
                 ),

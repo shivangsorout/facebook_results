@@ -49,32 +49,29 @@ class _ResultReadyViewState extends State<ResultReadyView> {
               centerTitle: true,
               title: const Text('Result Ready'),
               actions: [
-                SizedBox(
-                  width: context.mqSize.width * 0.14,
-                  child: TextButton(
-                    onPressed: () {
-                      context.read<GASBloc>().add(const GASEventResetState(
-                            shouldEmptyState: true,
-                          ));
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        homeRoute,
-                        (route) => false,
-                      );
-                    },
-                    style: ButtonStyle(
-                      overlayColor: MaterialStateProperty.all(Colors.grey[400]),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
+                TextButton(
+                  onPressed: () {
+                    context.read<GASBloc>().add(const GASEventResetState(
+                          shouldEmptyState: true,
+                        ));
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      homeRoute,
+                      (route) => false,
+                    );
+                  },
+                  style: ButtonStyle(
+                    overlayColor: MaterialStateProperty.all(Colors.grey[400]),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
                       ),
                     ),
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                        color: Colors.blue[600],
-                        fontSize: 16,
-                      ),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      color: Colors.blue[600],
+                      fontSize: 16,
                     ),
                   ),
                 ),
