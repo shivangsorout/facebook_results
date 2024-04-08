@@ -10,6 +10,7 @@ import 'package:facebook_results/services/google_app_script/bloc/gas_event.dart'
 import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
 import 'package:facebook_results/services/google_app_script/models/member.dart';
 import 'package:facebook_results/utility/generics/delete_dialog.dart';
+import 'package:facebook_results/utility/generics/error_dialog.dart';
 import 'package:facebook_results/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
@@ -26,7 +27,6 @@ class CreateResultView extends StatefulWidget {
 }
 
 class _CreateResultViewState extends State<CreateResultView> with RouteAware {
-  // Member? _selectedMember;
   List<Member> scoreList = [];
   List<Member> originalList = [];
   int? sheetId;
@@ -71,9 +71,10 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
           isLoading = state.isLoading;
         }
         return PopScope(
-          canPop: !isLoading && areListsEqual(scoreList, originalList),
+          canPop: !isLoading &&
+              (areListsEqual(scoreList, originalList) || isUpdating),
           onPopInvoked: (didPop) {
-            if (!isLoading && !didPop) {
+            if (!isLoading && !didPop && !isUpdating) {
               showDeleteDialog(
                 context: context,
                 content:
@@ -107,9 +108,6 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                     );
                   },
                 ),
-                SizedBox(
-                  width: context.mqSize.width * 0.02,
-                ),
                 IconSVGButton(
                   iconName: 'search',
                   onPress: () {
@@ -117,10 +115,6 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                       searchMembersRoute,
                       arguments: {
                         argKeyScoreList: scoreList,
-                        // <Member>[
-                        //   Member(id: '23232', name: "Rafi Ahmed", isAdmin: true),
-                        //   Member(id: '23233', name: "Ravi Singh", isAdmin: false)
-                        // ],
                         argKeyCallback: onScoreChange,
                         argKeyIsUpdating: isUpdating,
                         argKeySheetId: sheetId,
@@ -128,25 +122,26 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                     );
                   },
                 ),
-                SizedBox(
-                  width: context.mqSize.width * 0.02,
-                ),
                 TextButton(
                   onPressed: () {
-                    context.read<GASBloc>().add(GASEventUpdateScoredata(
-                          sheetId: sheetId!,
-                          scoreList: List.from(scoreList),
-                          isUpdating: isUpdating,
-                        ));
-                    Navigator.of(context)
-                        .pushNamed(resultReadyRoute)
-                        .then((value) {
-                      if (!isUpdating) {
-                        setState(() {
-                          isUpdating = true;
-                        });
-                      }
-                    });
+                    if (!areListsEqual(scoreList, originalList) || isUpdating) {
+                      context.read<GASBloc>().add(GASEventUpdateScoredata(
+                            sheetId: sheetId!,
+                            scoreList: List.from(scoreList),
+                            isUpdating: isUpdating,
+                          ));
+                      Navigator.of(context)
+                          .pushNamed(resultReadyRoute)
+                          .then((value) {
+                        if (!isUpdating) {
+                          setState(() {
+                            isUpdating = true;
+                          });
+                        }
+                      });
+                    } else {
+                      showErrorDialog(context, 'Please add some data!');
+                    }
                   },
                   style: ButtonStyle(
                     overlayColor: MaterialStateProperty.all(Colors.grey[400]),
@@ -175,16 +170,11 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
                     a.name.toLowerCase().compareTo(b.name.toLowerCase()));
                 return ResultListTile(
                   member: scoreList[index],
-                  // Member(
-                  //     id: '23232',
-                  //     name: "Rafi Ahmed sadasdasdasd sadasdasd asdasd asdas",
-                  //     isAdmin: true),
                   onChanged: onScoreChange,
                   onLongTap: (member) {
                     showBottomMenu(
                       context: context,
                       selectedMember: member,
-                      // globalMember: _selectedMember,
                       index: index,
                       isUpdating: isUpdating,
                       scoreList: scoreList,
@@ -213,7 +203,6 @@ class _CreateResultViewState extends State<CreateResultView> with RouteAware {
 void showBottomMenu({
   required Member selectedMember,
   required int index,
-  // required Member? globalMember,
   required BuildContext context,
   required bool isUpdating,
   required List<Member> scoreList,
@@ -254,7 +243,6 @@ void showBottomMenu({
                   }
                   _disposingSelectedMember(
                     context: context,
-                    // member: globalMember,
                   );
                 });
               },
@@ -279,7 +267,6 @@ void showBottomMenu({
                 ).then((value) {
                   _disposingSelectedMember(
                     context: context,
-                    // member: globalMember,
                   );
                 });
               },
@@ -291,7 +278,6 @@ void showBottomMenu({
               onPress: () {
                 _disposingSelectedMember(
                   context: context,
-                  // member: globalMember,
                 );
               },
             ),
@@ -303,10 +289,8 @@ void showBottomMenu({
 }
 
 void _disposingSelectedMember({
-  // required Member? member,
   required BuildContext context,
 }) {
-  // member = null;
   Navigator.of(context).pop(true);
 }
 

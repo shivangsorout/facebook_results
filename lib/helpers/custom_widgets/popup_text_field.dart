@@ -9,12 +9,14 @@ class PopupTextField extends StatelessWidget {
   final String hintText;
   final TextInputType keyboardType;
   final ValidatorCallback validator;
+  final TextInputAction? textInputAction;
   const PopupTextField({
     super.key,
     required this.textFieldName,
     required this.controller,
     required this.hintText,
     this.keyboardType = TextInputType.name,
+    this.textInputAction,
     required this.validator,
   });
 
@@ -36,6 +38,7 @@ class PopupTextField extends StatelessWidget {
           ),
         ),
         TextFormField(
+          textInputAction: textInputAction,
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,

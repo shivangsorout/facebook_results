@@ -1,5 +1,6 @@
 import 'package:facebook_results/constants/routes.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
+import 'package:facebook_results/helpers/custom_widgets/popup_text_field.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_bloc.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_event.dart';
 import 'package:facebook_results/services/google_app_script/bloc/gas_state.dart';
@@ -7,6 +8,7 @@ import 'package:facebook_results/services/google_app_script/models/member.dart';
 import 'package:facebook_results/utility/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'dart:developer' as devtools show log;
 
 class ResultReadyView extends StatefulWidget {
   const ResultReadyView({super.key});
@@ -17,17 +19,20 @@ class ResultReadyView extends StatefulWidget {
 
 class _ResultReadyViewState extends State<ResultReadyView> {
   late final TextEditingController _textController;
+  late final TextEditingController _characterController;
   List<Member> sortedMembers = [];
 
   @override
   void initState() {
     _textController = TextEditingController();
+    _characterController = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _characterController.dispose();
     super.dispose();
   }
 
@@ -38,7 +43,9 @@ class _ResultReadyViewState extends State<ResultReadyView> {
         if (state is GASStateResultReady) {
           sortedMembers = List.from(state.sortedDataList);
           if (_textController.text.isEmpty) {
-            _textController.text = generateScoreText(sortedMembers);
+            _textController.text = generateScoreText(
+              sortedMembers: sortedMembers,
+            );
           }
         }
         return PopScope(
@@ -49,6 +56,24 @@ class _ResultReadyViewState extends State<ResultReadyView> {
               centerTitle: true,
               title: const Text('Result Ready'),
               actions: [
+                IconButton(
+                  onPressed: () {
+                    showCharacterPopup(
+                      context: context,
+                      textController: _characterController,
+                      sortedMembers: sortedMembers,
+                    ).then((value) {
+                      if (value != null && value.isNotEmpty) {
+                        _textController.text = value;
+                      }
+                      _characterController.clear();
+                    });
+                  },
+                  icon: Icon(
+                    Icons.emoji_emotions_outlined,
+                    size: context.mqSize.height * 0.0274,
+                  ),
+                ),
                 TextButton(
                   onPressed: () {
                     context.read<GASBloc>().add(const GASEventResetState(
@@ -187,4 +212,97 @@ class _ResultReadyViewState extends State<ResultReadyView> {
       },
     );
   }
+}
+
+class AddCharacterPopup extends StatefulWidget {
+  final TextEditingController textController;
+  const AddCharacterPopup({
+    super.key,
+    required this.textController,
+  });
+
+  @override
+  State<AddCharacterPopup> createState() => _AddCharacterPopupState();
+}
+
+class _AddCharacterPopupState extends State<AddCharacterPopup> {
+  final formKey = GlobalKey<FormState>();
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      title: Center(
+        child: titleText(
+          context: context,
+          text: 'Add characters',
+        ),
+      ),
+      content: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PopupTextField(
+              textFieldName: 'Characters',
+              controller: widget.textController,
+              hintText: 'Add your characters...',
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please Enter a character!';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        MaterialButton(
+          onPressed: () {
+            if (formKey.currentState!.validate()) {
+              Navigator.of(context).pop(true);
+            }
+          },
+          color: Colors.black,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Text(
+            'Add',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: context.mqSize.height * 0.019,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Future<String?> showCharacterPopup({
+  required BuildContext context,
+  required TextEditingController textController,
+  required List<Member> sortedMembers,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AddCharacterPopup(textController: textController);
+    },
+  ).then((value) {
+    if (value ?? false) {
+      return generateScoreText(
+        sortedMembers: sortedMembers,
+        dots: textController.text,
+      );
+    } else {
+      return null;
+    }
+  });
 }

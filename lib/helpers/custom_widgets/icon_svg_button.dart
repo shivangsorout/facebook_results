@@ -15,19 +15,12 @@ class IconSVGButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: onPress,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: context.mqSize.height * 0.008,
-          horizontal: context.mqSize.width * 0.012,
-        ),
-        child: SvgPicture.asset(
-          'assets/icons/$iconName.svg',
-          height: context.mqSize.height * 0.026,
-          fit: BoxFit.fitHeight,
-        ),
+    return IconButton(
+      onPressed: onPress,
+      icon: SvgPicture.asset(
+        'assets/icons/$iconName.svg',
+        height: context.mqSize.height * 0.026,
+        fit: BoxFit.fitHeight,
       ),
     );
   }

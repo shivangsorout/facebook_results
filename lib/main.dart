@@ -11,9 +11,14 @@ import 'package:facebook_results/constants/theme_constant.dart';
 import 'package:facebook_results/extensions/buildcontext/media_query_size.dart';
 import 'package:facebook_results/views/home_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'dart:developer' as devtools show log;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(
     const MainApp(),
   );

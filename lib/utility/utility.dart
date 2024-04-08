@@ -78,7 +78,10 @@ bool areListsEqual(List<Member> list1, List<Member> list2) {
   }
 }
 
-String generateScoreText(List<Member> sortedMembers) {
+String generateScoreText({
+  required List<Member> sortedMembers,
+  String dots = "...................",
+}) {
   if (sortedMembers.isEmpty) {
     return ''; // Return empty string if the list is empty
   }
@@ -93,7 +96,6 @@ String generateScoreText(List<Member> sortedMembers) {
   membersList.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
   adminsList.sort((a, b) => (b.score ?? 0).compareTo(a.score ?? 0));
 
-  const dots = "...................";
   int? memberScore = membersList.first.score;
   for (var i = 0; i < membersList.length; i++) {
     var memberInner = membersList[i];
