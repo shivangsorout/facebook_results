@@ -29,6 +29,7 @@ class MainApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => GASBloc(GoogleAppScriptService()),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         navigatorObservers: [routeObserver],
         theme: ThemeData(
           appBarTheme: AppBarTheme(
