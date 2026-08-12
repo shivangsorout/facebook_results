@@ -21,6 +21,7 @@ class _ResultReadyViewState extends State<ResultReadyView> {
   late final TextEditingController _textController;
   late final TextEditingController _characterController;
   List<Member> sortedMembers = [];
+  (String, int) record1 = ('', 0);
 
   @override
   void initState() {
@@ -43,9 +44,10 @@ class _ResultReadyViewState extends State<ResultReadyView> {
         if (state is GASStateResultReady) {
           sortedMembers = List.from(state.sortedDataList);
           if (_textController.text.isEmpty) {
-            _textController.text = generateScoreText(
+            record1 = generateScoreText(
               sortedMembers: sortedMembers,
             );
+            _textController.text = record1.$1;
           }
         }
         return PopScope(
@@ -121,6 +123,19 @@ class _ResultReadyViewState extends State<ResultReadyView> {
                                   style: TextStyle(
                                     fontSize: context.mqSize.height * 0.044,
                                     fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top: context.mqSize.height * 0.005,
+                                    bottom: context.mqSize.height * 0.005,
+                                  ),
+                                  child: Text(
+                                    'Total Posts: ${record1.$2}',
+                                    style: TextStyle(
+                                      fontSize: context.mqSize.height * 0.030,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                                 Padding(
@@ -300,7 +315,7 @@ Future<String?> showCharacterPopup({
       return generateScoreText(
         sortedMembers: sortedMembers,
         dots: textController.text,
-      );
+      ).$1;
     } else {
       return null;
     }

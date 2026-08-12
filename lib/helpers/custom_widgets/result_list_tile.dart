@@ -27,18 +27,21 @@ class _ResultListTileState extends State<ResultListTile>
   late final int randomNumber;
   late Member member;
   TextEditingController? _textController;
+  FocusNode? _textFocusNode;
 
   @override
   void initState() {
     randomNumber = Random().nextInt(11);
     _textController =
         TextEditingController(text: widget.member.score?.toString() ?? '');
+    _textFocusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     _textController?.dispose();
+    _textFocusNode?.dispose();
     super.dispose();
   }
 
@@ -62,6 +65,7 @@ class _ResultListTileState extends State<ResultListTile>
               onLongPress: () {
                 widget.onLongTap(member);
               },
+              onTap: () => FocusScope.of(context).requestFocus(_textFocusNode),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: context.mqSize.width * 0.03,
@@ -119,6 +123,7 @@ class _ResultListTileState extends State<ResultListTile>
                               );
                               widget.onChanged(updatedMember);
                             },
+                            focusNode: _textFocusNode,
                             autocorrect: false,
                             controller: _textController,
                             keyboardType: TextInputType.number,

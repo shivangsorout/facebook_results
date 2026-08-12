@@ -77,6 +77,22 @@ class _SearchMembersViewState extends State<SearchMembersView> {
             controller: _searchController,
             onChanged: _filterMembers,
             decoration: InputDecoration(
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _searchController.clear();
+                        });
+                      },
+                      icon: Icon(
+                        Icons.close,
+                        size: context.mqSize.height * 0.023,
+                      ),
+                      hoverColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    )
+                  : null,
               hintText: 'Search',
               hintStyle: TextStyle(
                 color: const Color(0xff686868),

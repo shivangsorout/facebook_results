@@ -78,12 +78,12 @@ bool areListsEqual(List<Member> list1, List<Member> list2) {
   }
 }
 
-String generateScoreText({
+(String, int) generateScoreText({
   required List<Member> sortedMembers,
   String dots = "...................",
 }) {
   if (sortedMembers.isEmpty) {
-    return ''; // Return empty string if the list is empty
+    return ('', 0); // Return empty string if the list is empty
   }
 
   String result = '';
@@ -133,8 +133,13 @@ String generateScoreText({
     // Concatenate admin's name with dots and score
     result += '\n${admin.name + dots + admin.score.toString()}';
   }
-
-  return result;
+  int totalPosts = membersList
+          .where((member) => member.score != null && member.score != 0)
+          .length +
+      adminsList
+          .where((member) => member.score != null && member.score != 0)
+          .length;
+  return (result, totalPosts);
 }
 
 void listenerFunction(context, state) {
