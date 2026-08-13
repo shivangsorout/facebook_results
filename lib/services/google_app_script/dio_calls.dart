@@ -18,7 +18,13 @@ Future<Map<String, dynamic>> getRequest({
   Uri uri = Uri.parse(baseUrl).replace(queryParameters: queryParams);
 
   try {
-    Response response = await dio.getUri(uri);
+    // Hardlock query string and protect 302 redirect code
+    Response response = await dio.get(
+      uri.toString(),
+      options: Options(
+        validateStatus: (status) => status! < 500,
+      ),
+    );
     checkingResponse(response);
     return response.data;
   } catch (error) {
